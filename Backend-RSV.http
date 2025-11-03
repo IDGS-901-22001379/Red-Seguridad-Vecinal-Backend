@@ -1,0 +1,6 @@
+@Backend_RSV_HostAddress = http://localhost:5165
+
+GET {{Backend_RSV_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
