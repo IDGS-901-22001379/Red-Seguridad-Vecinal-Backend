@@ -1,3 +1,4 @@
+using Backend_RSV.Data.Usuarios;
 using MiApi.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,19 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CadenaSQL")));
+
+builder.Services.AddScoped<UsuariosData>();
+
+Backend_RSV.Config.FirebaseInitializer.Initialize();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("NuevaPolitica", app =>
+    {
+        app.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
 
 var app = builder.Build();
 
@@ -28,6 +42,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("NuevaPolitica");
 
 app.UseAuthorization();
 
