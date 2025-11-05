@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Backend_RSV.Data.Usuarios;
 using FirebaseAdmin.Auth;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend_RSV.Controllers.Usuarios
@@ -10,10 +11,12 @@ namespace Backend_RSV.Controllers.Usuarios
     [Route("api/[controller]")]
     public class UsuariosController : ControllerBase
     {
+        private readonly IConfiguration _config;
         private readonly UsuariosData _usuariosData;
 
-        public UsuariosController(UsuariosData usuariosData)
+        public UsuariosController(UsuariosData usuariosData, IConfiguration config)
         {
+            _config = config;
             _usuariosData = usuariosData;
         }
 
@@ -37,8 +40,9 @@ namespace Backend_RSV.Controllers.Usuarios
                     "application/json"
                 );
 
+                var firebaseKey = _config["Firebase:ApiKey"];
                 var response = await http.PostAsync(
-                    $"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyC-kb49V6i_CA1V1Qs9U78iu6jIX2VuCqM",
+                    $"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={firebaseKey}",
                     content
                 );
 
