@@ -5,11 +5,10 @@ using Backend_RSV.Services;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using System.IO;
+using Backend_RSV.Data.Reportes;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// 🔥 AGREGAR IGNORECYCLES PARA EVITAR CICLOS JSON:
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -23,7 +22,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CadenaSQL")));
 
-// 🔥 CONFIGURAR FIREBASE
+// CONFIGURAR FIREBASE
 var firebasePath = Path.Combine(Directory.GetCurrentDirectory(), "Firebase-Credentials", "firebase-adminsdk.json");
 if (File.Exists(firebasePath))
 {
@@ -39,9 +38,10 @@ else
     Console.WriteLine("⚠️  Las notificaciones funcionarán en modo simulación");
 }
 
-// 🔥 REGISTRAR TUS SERVICIOS PERSONALIZADOS:
+
 builder.Services.AddScoped<AlertaPanicoData>();
 builder.Services.AddScoped<FirebaseNotificationService>();
+builder.Services.AddScoped<ReporteData>();
 
 var app = builder.Build();
 
