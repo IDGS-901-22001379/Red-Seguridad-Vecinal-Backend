@@ -69,8 +69,7 @@ namespace Backend_RSV.Controllers.Pagos
                 .Include(c => c.Solicitud)
                 .FirstOrDefaultAsync(c => c.CargoServicioID == id);
         }
-        // 1️⃣ Registrar nuevo pago
-        public async Task<Pago> RegistrarPagoAsync(Pago pago, byte[]? archivoComprobante = null, string? nombreArchivo = null, string? tipoMime = null)
+        public async Task<Pago> RegistrarPagoAsync(Pago pago, ComprobantePago? comprobante)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -79,16 +78,9 @@ namespace Backend_RSV.Controllers.Pagos
                 _context.Pagos.Add(pago);
                 await _context.SaveChangesAsync();
 
-                if (archivoComprobante != null)
+                if (comprobante != null && comprobante.Archivo != null)
                 {
-                    var comprobante = new ComprobantePago
-                    {
-                        PagoID = pago.PagoID,
-                        Archivo = archivoComprobante,
-                        NombreArchivo = nombreArchivo ?? $"comprobante_{pago.PagoID}.pdf",
-                        TipoArchivo = tipoMime ?? "application/pdf"
-                    };
-
+                    comprobante.PagoID = pago.PagoID;
                     _context.ComprobantesPago.Add(comprobante);
                     await _context.SaveChangesAsync();
                 }
@@ -102,6 +94,7 @@ namespace Backend_RSV.Controllers.Pagos
                 throw;
             }
         }
+
 
         public async Task<Pago?> ObtenerPagoPorIdAsync(int id)
         {

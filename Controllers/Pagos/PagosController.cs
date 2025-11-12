@@ -98,21 +98,21 @@ namespace Backend_RSV.Controllers.Pagos
         [HttpPost]
         public async Task<IActionResult> RegistrarPago([FromForm] Pago pago, IFormFile? comprobante)
         {
-            byte[]? archivoBytes = null;
+            ComprobantePago? comprobantePago = null;
 
             if (comprobante != null)
             {
                 using var ms = new MemoryStream();
                 await comprobante.CopyToAsync(ms);
-                archivoBytes = ms.ToArray();
+                comprobantePago = new ComprobantePago
+                {
+                    Archivo = ms.ToArray(),
+                    NombreArchivo = comprobante.FileName,
+                    TipoArchivo = comprobante.ContentType
+                };
             }
 
-            var nuevoPago = await _pagosData.RegistrarPagoAsync(
-                pago,
-                archivoBytes,
-                comprobante?.FileName,
-                comprobante?.ContentType
-            );
+            var nuevoPago = await _pagosData.RegistrarPagoAsync(pago, comprobantePago);
 
             return Ok(new
             {

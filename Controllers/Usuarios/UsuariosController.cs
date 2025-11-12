@@ -66,6 +66,10 @@ namespace Backend_RSV.Controllers.Usuarios
                     message = "Inicio de sesión exitoso",
                     id = usuario.UsuarioID,
                     nombre = usuario.Persona.Nombre,
+                    apellidoP = usuario.Persona.ApellidoPaterno,
+                    apellidoM = usuario.Persona.ApellidoMaterno,
+                    numeroCasa = usuario.NumeroCasa,
+                    calle = usuario.Calle,
                     tipoUsuario = usuario.TipoUsuario.Nombre,
                     firebaseID = firebaseUID
                 });
@@ -114,11 +118,14 @@ namespace Backend_RSV.Controllers.Usuarios
                 };
 
                 var numeroTarjetaBytes = Encoding.UTF8.GetBytes(request.NumeroTarjeta);
+                string ultimos4 = request.NumeroTarjeta.Length >= 4
+                    ? request.NumeroTarjeta[^4..]
+                    : request.NumeroTarjeta;
 
                 var cuenta = new CuentaUsuario
                 {
                     NumeroTarjeta = numeroTarjetaBytes,
-                    UltimosDigitos = request.UltimosDigitos,
+                    UltimosDigitos = ultimos4,
                     FechaVencimiento = request.FechaVencimiento
                 };
 
@@ -157,6 +164,7 @@ namespace Backend_RSV.Controllers.Usuarios
                 });
             }
         }
+
         [HttpPut("update")]
         public async Task<IActionResult> UpdateUsuario([FromBody] UsuarioUpdateRequest request)
         {
@@ -262,7 +270,6 @@ namespace Backend_RSV.Controllers.Usuarios
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string NumeroTarjeta { get; set; } = string.Empty;
-        public string UltimosDigitos { get; set; } = string.Empty;
         public DateOnly FechaVencimiento { get; set; }
     }
 }
