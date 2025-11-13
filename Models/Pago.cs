@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 public class Pago
 {
@@ -33,6 +34,7 @@ public class Pago
     [StringLength(4)]
     public string? UltimosDigitosTarjeta { get; set; }
 
+    [ValidateNever]
     [ForeignKey("UsuarioID")]
     public virtual Usuario Usuario { get; set; } = null!;
 
