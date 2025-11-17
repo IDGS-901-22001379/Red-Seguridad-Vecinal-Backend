@@ -1,5 +1,7 @@
 using Backend_RSV.Controllers.Pagos;
 using Backend_RSV.Data.Avisos;
+using Backend_RSV.Data.Estadisticas;
+using Backend_RSV.Data.Mapa;
 using Backend_RSV.Data.Usuarios;
 using MiApi.Data;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +52,8 @@ builder.Services.AddScoped<ReporteData>();
 builder.Services.AddScoped<UsuariosData>();
 builder.Services.AddScoped<AvisosData>();
 builder.Services.AddScoped<PagosData>();
+builder.Services.AddScoped<MapaData>();
+builder.Services.AddScoped<EstadisticasData>();
 
 Backend_RSV.Config.FirebaseInitializer.Initialize();
 
@@ -70,7 +74,7 @@ builder.Configuration
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 });
 
 var app = builder.Build();

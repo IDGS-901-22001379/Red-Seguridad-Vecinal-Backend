@@ -2,8 +2,8 @@ using System.Text;
 using System.Text.Json;
 using Backend_RSV.Data.Usuarios;
 using FirebaseAdmin.Auth;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
+using Backend_RSV.Models.Request;
 
 namespace Backend_RSV.Controllers.Usuarios
 {
@@ -71,6 +71,7 @@ namespace Backend_RSV.Controllers.Usuarios
                     numeroCasa = usuario.NumeroCasa,
                     calle = usuario.Calle,
                     tipoUsuario = usuario.TipoUsuario.Nombre,
+                    descripcion = usuario.TipoUsuario.Descripcion,
                     firebaseID = firebaseUID
                 });
             }
@@ -81,7 +82,7 @@ namespace Backend_RSV.Controllers.Usuarios
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Registrar([FromBody] RegistroRequest request)
+        public async Task<IActionResult> Registrar([FromBody] RegistroUsuarioRequest request)
         {
             if (request == null)
                 return BadRequest("Datos incompletos.");
@@ -206,6 +207,9 @@ namespace Backend_RSV.Controllers.Usuarios
                 u.Persona.ApellidoMaterno,
                 u.Persona.Email,
                 tipoUsuario = u.TipoUsuario.Nombre,
+                u.CuentaUsuario?.NumeroTarjeta,
+                u.CuentaUsuario?.UltimosDigitos,
+                u.CuentaUsuario?.FechaVencimiento,
                 u.Activo
             }));
         }
@@ -230,6 +234,9 @@ namespace Backend_RSV.Controllers.Usuarios
                 tipoUsuario = usuario.TipoUsuario.Nombre,
                 usuario.NumeroCasa,
                 usuario.Calle,
+                usuario.CuentaUsuario?.NumeroTarjeta,
+                usuario.CuentaUsuario?.UltimosDigitos,
+                usuario.CuentaUsuario?.FechaVencimiento,
                 usuario.Activo
             });
         }
@@ -249,27 +256,48 @@ namespace Backend_RSV.Controllers.Usuarios
                 t.Descripcion
             }));
         }
-    }
+        [HttpGet("cuentas-usuario")]
+        public async Task<IActionResult> GetAll()
+        {
+            var cuentas = await _usuariosData.GetAllAsync();
+            var response = cuentas.Select(c => new
+            {
+                c.CuentaID,
+                c.UsuarioID,
+                c.NumeroTarjeta,
+                c.UltimosDigitos,
+                c.FechaVencimiento,
+                c.SaldoMantenimiento,
+                c.SaldoServicios,
+                c.SaldoTotal,
+                c.UltimaActualizacion
+            });
 
-    public class LoginRequest
-    {
-        public string? Email { get; set; }
-        public string? Password { get; set; }
-    }
+            return Ok(response);
+        }
 
-    public class RegistroRequest
-    {
-        public int TipoUsuarioID { get; set; }
-        public string? NumeroCasa { get; set; }
-        public string? Calle { get; set; }
-        public string Nombre { get; set; } = string.Empty;
-        public string ApellidoPaterno { get; set; } = string.Empty;
-        public string? ApellidoMaterno { get; set; }
-        public string? Telefono { get; set; }
-        public DateOnly? FechaNacimiento { get; set; }
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string NumeroTarjeta { get; set; } = string.Empty;
-        public DateOnly FechaVencimiento { get; set; }
+        [HttpGet("cuenta-usuario/{usuarioId}")]
+        public async Task<IActionResult> GetById(int usuarioId)
+        {
+            var cuenta = await _usuariosData.GetByUsuarioIdAsync(usuarioId);
+
+            if (cuenta == null)
+                return NotFound(new { mensaje = "La cuenta no existe." });
+            var response = new
+            {
+                cuenta.CuentaID,
+                cuenta.UsuarioID,
+                cuenta.NumeroTarjeta,
+                cuenta.UltimosDigitos,
+                cuenta.FechaVencimiento,
+                cuenta.SaldoMantenimiento,
+                cuenta.SaldoServicios,
+                cuenta.SaldoTotal,
+                cuenta.UltimaActualizacion
+            };
+
+            return Ok(response);
+        }
+
     }
 }
