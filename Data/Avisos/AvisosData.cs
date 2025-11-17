@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FirebaseAdmin.Auth;
+using Backend_RSV.Models.Request;
 using MiApi.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,42 +13,77 @@ namespace Backend_RSV.Data.Avisos
             _context = context;
         }
 
-        public async Task<List<Aviso>> GetAllAsync()
+        public async Task<List<AvisosDTO>> GetAllAsync()
         {
             return await _context.Avisos
                 .Include(a => a.Categoria)
-                .Include(a => a.Usuario)
                 .OrderByDescending(a => a.FechaPublicacion)
+                .Select(a => new AvisosDTO
+                {
+                    AvisoID = a.AvisoID,
+                    UsuarioID = a.UsuarioID,
+                    CategoriaID = a.CategoriaID,
+                    Titulo = a.Titulo,
+                    Descripcion = a.Descripcion,
+                    FechaEvento = a.FechaEvento,
+                    FechaPublicacion = a.FechaPublicacion,
+                    CategoriaNombre = a.Categoria.Nombre,
+                    CategoriaActiva = a.Categoria.Activo,
+
+                })
                 .ToListAsync();
         }
-
-        public async Task<Aviso?> GetByIdAsync(int id)
+        public async Task<AvisosDTO?> GetByIdAsync(int id)
         {
             return await _context.Avisos
                 .Include(a => a.Categoria)
-                .Include(a => a.Usuario)
-                .FirstOrDefaultAsync(a => a.AvisoID == id);
+                .Where(a => a.AvisoID == id)
+                .Select(a => new AvisosDTO
+                {
+                    AvisoID = a.AvisoID,
+                    UsuarioID = a.UsuarioID,
+                    CategoriaID = a.CategoriaID,
+                    Titulo = a.Titulo,
+                    Descripcion = a.Descripcion,
+                    FechaEvento = a.FechaEvento,
+                    FechaPublicacion = a.FechaPublicacion,
+
+                    CategoriaNombre = a.Categoria.Nombre,
+                    CategoriaActiva = a.Categoria.Activo,
+                })
+                .FirstOrDefaultAsync();
         }
 
-        public async Task<Aviso> AddAsync(Aviso aviso)
+        public async Task<Aviso> AddAsync(AvisoRegistroRequest request)
         {
+            var aviso = new Aviso
+            {
+                UsuarioID = request.UsuarioID,
+                CategoriaID = request.CategoriaID,
+                Titulo = request.Titulo,
+                Descripcion = request.Descripcion,
+                FechaEvento = request.FechaEvento,
+                FechaPublicacion = DateTime.Now
+            };
+
             _context.Avisos.Add(aviso);
             await _context.SaveChangesAsync();
             return aviso;
         }
 
-        public async Task<Aviso?> UpdateAsync(Aviso aviso)
+        public async Task<Aviso?> UpdateAsync(int id, AvisoUpdateRequest request)
         {
-            var existing = await _context.Avisos.FindAsync(aviso.AvisoID);
-            if (existing == null) return null;
+            var aviso = await _context.Avisos.FindAsync(id);
+            if (aviso == null)
+                return null;
 
-            existing.Titulo = aviso.Titulo;
-            existing.Descripcion = aviso.Descripcion;
-            existing.FechaEvento = aviso.FechaEvento;
-            existing.CategoriaID = aviso.CategoriaID;
+            aviso.CategoriaID = request.CategoriaID;
+            aviso.Titulo = request.Titulo;
+            aviso.Descripcion = request.Descripcion;
+            aviso.FechaEvento = request.FechaEvento;
 
             await _context.SaveChangesAsync();
-            return existing;
+            return aviso;
         }
 
         public async Task<bool> DeleteAsync(int id)
