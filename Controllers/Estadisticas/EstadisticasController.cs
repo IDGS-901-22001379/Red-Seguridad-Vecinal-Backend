@@ -7,6 +7,7 @@ using QuestPDF.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
+
 namespace Backend_RSV.Controllers.Estadisticas
 {
     [ApiController]
