@@ -132,6 +132,18 @@ firebase-credentials/
 # Posibles llaves / certificados
 firebase-adminsdk.json
 firebase-key.json
+<<<<<<< HEAD
+>>>>>>> origin/oscar
+firebase-credentials/
+<<<<<<< HEAD
+firebase-credentials/
+firebase-credentials/
+firebase-credentials/
+firebase-credentials/
+=======
+>>>>>>> origin/oscar
+firebase-credentials/
+=======
 *.pem
 *.p12
 *.key
@@ -141,3 +153,4 @@ serviceAccount*.json
 
 # Evitar proyecto anidado duplicado
 /Red-Seguridad-Vecinal-Backend/
+>>>>>>> landin

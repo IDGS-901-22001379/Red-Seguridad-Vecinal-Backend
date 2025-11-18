@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Backend_RSV.Models.Request;
 using FirebaseAdmin.Auth;
 using MiApi.Data;
 using Microsoft.EntityFrameworkCore;
@@ -17,13 +14,21 @@ namespace Backend_RSV.Data.Usuarios
             _context = context;
         }
 
-        // Método para obtener un usuario según su FirebaseUID
         public async Task<Usuario?> LoginAsync(string firebaseUID)
         {
-            return await _context.Usuarios
+            var usuario = await _context.Usuarios
                 .Include(u => u.Persona)
                 .Include(u => u.TipoUsuario)
-                .FirstOrDefaultAsync(u => u.FirebaseUID == firebaseUID);
+                .FirstOrDefaultAsync(u => u.FirebaseUID == firebaseUID && u.Activo);
+
+            if (usuario != null)
+            {
+                usuario.UltimoAcceso = DateTime.Now;
+                _context.Usuarios.Update(usuario);
+                await _context.SaveChangesAsync();
+            }
+
+            return usuario;
         }
         public async Task<Usuario> RegistrarUsuarioAsync(Persona persona, Usuario usuario, CuentaUsuario cuentaUsuario)
         {
@@ -116,10 +121,17 @@ namespace Backend_RSV.Data.Usuarios
 
             if (usuario.CuentaUsuario != null)
             {
-                usuario.CuentaUsuario.NumeroTarjeta = System.Text.Encoding.UTF8.GetBytes(request.NumeroTarjeta);
-                usuario.CuentaUsuario.UltimosDigitos = request.UltimosDigitos;
+                if (!string.IsNullOrEmpty(request.NumeroTarjeta))
+                {
+                    usuario.CuentaUsuario.NumeroTarjeta = System.Text.Encoding.UTF8.GetBytes(request.NumeroTarjeta);
+
+                    string ultimos4 = request.NumeroTarjeta.Length >= 4
+                        ? request.NumeroTarjeta[^4..]
+                        : request.NumeroTarjeta;
+
+                    usuario.CuentaUsuario.UltimosDigitos = ultimos4;
+                }
                 usuario.CuentaUsuario.FechaVencimiento = request.FechaVencimiento;
-                usuario.CuentaUsuario.UltimaActualizacion = DateTime.Now;
             }
 
             _context.Usuarios.Update(usuario);
@@ -127,11 +139,13 @@ namespace Backend_RSV.Data.Usuarios
 
             return true;
         }
+
         public async Task<List<Usuario>> GetAllUsuariosAsync()
         {
             return await _context.Usuarios
                 .Include(u => u.Persona)
                 .Include(u => u.TipoUsuario)
+                .Include(u => u.CuentaUsuario)
                 .ToListAsync();
         }
 
@@ -140,11 +154,26 @@ namespace Backend_RSV.Data.Usuarios
             return await _context.Usuarios
                 .Include(u => u.Persona)
                 .Include(u => u.TipoUsuario)
+                .Include(u => u.CuentaUsuario)
                 .FirstOrDefaultAsync(u => u.UsuarioID == id);
         }
         public async Task<List<TipoUsuario>> GetTiposUsuarioAsync()
         {
             return await _context.TiposUsuario.ToListAsync();
         }
+        public async Task<List<CuentaUsuario>> GetAllAsync()
+        {
+            return await _context.CuentaUsuario
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<CuentaUsuario?> GetByUsuarioIdAsync(int usuarioId)
+        {
+            return await _context.CuentaUsuario
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.UsuarioID == usuarioId);
+        }
+
     }
 }
